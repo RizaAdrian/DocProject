@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>plp project</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+
+<!-- Header -->
+<header class="w3-display-container w3-content w3-center" style="max-width:1500px">
+  <div class="w3-display-middle w3-padding-large w3-border w3-wide w3-text-light-grey w3-center">
+    
+    <h5 class="" style="white-space:nowrap">Documentation generator</h5>
+    
+  </div>
+  
+</header>
+
+<!-- Page content -->
+<div class="w3-content w3-padding-large w3-margin-top" id="portfolio">
+
+  <!-- Contact -->
+  <div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="contact">
+    <h3 class="w3-center">DOCUMENTATION API</h3>
+    <hr>
+    <hr>
+	<h4 class="w3-left"><u>CODE</u></h3>
+	</br>
+    <ul>
+	<li>module IMP-SYNTAX</li>
+	<li>syntax AExp ::= Int // builtin</li>
+      <li>          | Id  // builtin</li>
+      <li>        | String // builtin</li>
+      <li>          | "read" "(" ")"</li>
+      <li>          | Id "(" Params ")" [strict(2)]</li>
+      <li>          | "++" Id</li>
+      <li>          > left:</li>
+      <li>            AExp "*" AExp [left]</li>
+      <li>          | AExp "/" AExp [left]</li>
+      <li>          > left:</li>
+      <li>            AExp "+" AExp [left, strict]</li>
+      <li>          | AExp "-" AExp [left]</li>
+      <li>          | "(" AExp ")"  [bracket]</li>
+
+	  <li>	syntax BExp ::= Bool // builtin</li>
+      <li>          | "!" BExp</li>
+      <li>          | BExp "&&" BExp [non-assoc]</li>
+      <li>          | AExp "<=" AExp [strict]</li>
+      <li>          | AExp "<"  AExp</li>
+      <li>          | "(" BExp ")" [bracket]</li>
+
+	  <li>	syntax Block ::= "{" Stmt "}"</li>
+      <li>           | "{" "}"</li>
+
+	  <li>	syntax Stmt ::= Block</li>
+      <li>          | "int" Id ";"</li>
+      <li>          | "print" "(" AExp ")" ";" [strict]</li>
+      <li>          | Id "=" AExp ";"  [strict(2)]</li>
+      <li>          | "if" BExp Block "else" Block [strict(1)]</li>
+      <li>          | "while" BExp Block</li>
+      <li>          | "return" ";"</li>
+      <li>          | "return" AExp ";"  [strict]</li>
+      <li>          > Stmt Stmt [right]</li>
+
+  <li>syntax Pgm ::= List{Decl, ";"}</li>
+  <li>syntax Decl ::= FunDecl | VarDecl</li>
+  <li>syntax VarDecl ::= "int" Id</li>
+  <li>syntax FunDecl ::= "function" Id "(" VarDecls ")" Block</li>
+  <li>syntax VarDecls ::= List{VarDecl, ","}</li>
+  <li>syntax Params ::= List{AExp, ","}  [strict]</li>
+<li>endmodule</li>
+<li>module IMP</li>
+  <li>imports IMP-SYNTAX</li>
+
+  <li>syntax Val ::= Bool | Int | String</li>
+  <li>syntax Vals ::= List{Val, ","}</li>
+  <li>syntax KResult ::= Val | Vals </li>
+  <li>syntax AExp ::= Val</li>
+  <li>syntax Params ::= Vals </li>
+
+  <li>syntax KItem ::= "execute"</li>
+  <li>configuration <k> $PGM:Pgm ~> execute </k></li>
+              <li>  &ltenv&gt; .Map &lt/env &gt;</li>
+              <li>  &ltstore&gt; .Map &lt/store&gt;</li>
+              <li>  &ltstack> .List &lt/stack&gt;</li>
+              <li>  &ltfstack> .List &lt/fstack&gt;</li>
+              <li>  &ltin stream="stdin"> .List &lt/in&gt;</li>
+              <li>  &ltout stream="stdout"> .List &lt/out&gt;</li>
+</ul>
+</br>
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>trigger main</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>syntax Id ::= "main" [token]</li>
+			<li>rule .Pgm ~> execute => main(.Params)</li>
+
+			<li>rule I1:Int <= I2:Int => I1 <=Int I2</li>
+			<li>rule I1:Int + I2:Int => I1 +Int I2</li>
+
+			<li>rule S1:Stmt S2:Stmt => S1 ~> S2</li>
+			<li>rule D:Decl ; Ds:Pgm => D ~> Ds </li>
+		</ul>
+	 </div>		
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>local declarations</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>  rule &ltk&gt; int X:Id ; => . ...&lt/k&gt;</li>
+			<li> &ltenv&gt; M:Map => M[X <- !L:Int] &lt/env&gt;</li>
+			<li> &ltstore&gt; M':Map (.Map => !L |-> 0) &lt/store&gt; </li>
+		</ul>
+	 </div>	
+	  <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>global declarations</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li> rule &ltk&gt; (int X:Id => .) ...&lt/k&gt;</li>
+			<li>&ltenv&gt; Env:Map => Env[X <- !L:Int] &lt/env&gt;</li>
+
+			<li>&ltstore&gt; Mem:Map => Mem[!L <- 0] &lt/store&gt;</li>
+		</ul>
+	 </div>	
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>function declaration</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>  syntax Lambda ::= "lambda" "(" VarDecls "," Block ")"</li>
+			<li>rule &ltk&gt; (function F:Id (VD:VarDecls) B => .) ...&lt/k&gt;</li>
+
+			<li>&ltenv&gt; Env:Map => Env[F <- !L:Int] &lt/env&gt;</li>
+			<li>&ltstore&gt; Mem:Map => Mem[!L <- lambda(VD, B)] &lt/store&gt;</li>
+
+			<li> rule &ltk&gt; (X:Id = V:Int ; => .)  ...&lt/k&gt;</li>
+			<li>&ltenv&gt;... X |-> L:Int  ...&lt/env&gt;</li>
+			<li>&ltstore&gt;... L |-> (_ => V) ...&lt/store&gt;</li>
+			
+			<li>rule &ltk&gt; (X:Id => V) ...&lt/k&gt;</li>
+			<li>&ltenv&gt;... X |-> L:Int ...&lt/env&gt;</li>
+			<li> &ltstore&gt;... L |-> V:Int ...&lt/store&gt;</li>
+			<li> rule if true  B1:Block else B2:Block => B1 </li>
+			<li> rule if false B1:Block else B2:Block => B2 </li>
+		</ul>
+	 </div>
+	 
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b> syntax KItem ::= "restoreEnv"</b></label></h3>
+		<h3 class="w3-center"><label><b>rule &ltk&gt; { S:Stmt } => S ~> restoreEnv ...&lt/k&gt;</b></label></h3>
+		<h3 class="w3-center"><label><b>&ltenv&gt; Env &lt/env&gt;</b></label></h3>
+		<h3 class="w3-center"><label><b>&ltstack&gt; (.List => ListItem(Env)) ...&lt/stack&gt;</b></label></h3>
+		<h3 class="w3-center"><label><b> rule &ltk&gt; (restoreEnv => .) ...&lt/k&gt;</b></label></h3>
+		<h3 class="w3-center"><label><b>&ltenv&gt; _ => Env:Map &lt/env&gt;</b></label></h3>
+		<h3 class="w3-center"><label><b>&ltstack&gt; (ListItem(Env) => .List) ...&lt/stack&gt;</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li> rule { S } => S </li>
+			<li> rule { } => .</li>
+			<li>rule while B:BExp { S:Stmt } =></li>
+
+			<li> if B { S while B { S } } else { };</li>
+		</ul>
+	 </div>	
+	 
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>increment</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li> rule &ltk&gt; ( ++ X:Id => V +Int 1) ...&lt/k&gt</li>
+			<li>&ltenv&gt;... X |-> L ...&lt/env&gt;</li>
+
+			<li> &ltstore&gt;... (L:Int |-> (V:Int=> V +Int 1)) ...&lt/store&gt;</li>
+		</ul>
+	 </div>	
+	 
+	  <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>read</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>  rule &ltk&gt; (read() => V) ...&lt/k&gt;</li>
+			<li>&ltin&gt; (ListItem(V:Int) => .List) ...&lt/in&gt;</li>
+		</ul>
+	 </div>	
+	 
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>print</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>   syntax Printable ::= Int | String </li>
+			<li>   syntax AExp ::= Printable</li>
+			<li>  rule &ltk&gt;  (print(V:Printable); => .) ...&lt/k&gt;</li>
+			<li>&ltout&gt;... (.List => ListItem(V)) &lt/out&gt;</li>
+		</ul>
+	 </div>	
+	 
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>function call utils</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>  syntax KItem ::= "saveEnv"</li>
+			<li> syntax KItem ::= "mkDecl" "(" VarDecls "," Params ")" </li>
+		</ul>
+	 </div>	
+	
+	 <div class="w3-section"> 
+		<h3 class="w3-center">DOCUMENTATION API</h3>
+		<h3 class="w3-center"><label><b>function call</b></label></h3>
+		
+		<ul>
+			<li><h4><u>CODE</u></h3></li>
+			<li>rule &ltk&gt; F:Id ( PA:Params ) => saveEnv ~> mkDecl(PF, PA) ~> B ...&lt/k&gt;</li>
+			<li>&ltenv&gt;... F |-> L:Int ...&lt/env&gt;</li>
+			<li>&ltstore&gt;... L |-> lambda(PF:VarDecls, B:Block) ...&lt/store&gt;</li>
+			<li>rule &ltk&gt; saveEnv => . ...&lt/k&gt;</li>
+			<li> &ltenv&gt; Env:Map &lt/env&gt;</li>
+			<li> &ltfstack&gt; (.List => ListItem(Env)) ...&lt/fstack&gt;</li>
+			<li> rule mkDecl(.VarDecls, .Params) => .</li>
+			<li> rule &ltk&gt; mkDecl( (int X:Id, Ds) , (V, Ps) ) => mkDecl(Ds, Ps) ...&lt/k&gt;</li>
+			<li>&ltenv&gt; Env:Map => Env[X <- !L:Int] &lt/env&gt;</li>
+			<li>&ltstore&gt; Mem:Map => Mem[!L <- V] &lt/store&gt;</li>
+			<li>rule &ltk&gt; return V:Int ; => V ...&lt/k&gt;</li>
+			<li>&ltenv&gt; _ => Env &lt/env&gt;</li>
+			<li>&ltfstack&gt; (ListItem(Env) => .List) ...&lt/fstack&gt;</li>
+			<li>endmodule</li>
+			
+		</ul>
+	 </div>	
+  </div>
+
+<!-- End page content -->
+</div>
+
+<pre>
+	<code>
+		 syntax AExp ::= Int // builtin
+                | Id  // builtin
+                | String // builtin
+                | "read" "(" ")"
+                | Id "(" Params ")" [strict(2)]
+                | "++" Id
+                > left:
+                  AExp "*" AExp [left]
+                | AExp "/" AExp [left]
+                > left:
+                  AExp "+" AExp [left, strict]
+                | AExp "-" AExp [left]
+                | "(" AExp ")"  [bracket]
+
+	</code>
+</pre>
+
+
+</body>
+</html>

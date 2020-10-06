@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>plp project</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+<header class="w3-display-container w3-content w3-center" style="max-width:1500px">
+<div class="w3-display-middle w3-padding-large w3-border w3-wide w3-center">
+ <h4 class="" style="color:black">Documentation generator</h4>
+</div>
+</header>
+<div class="w3-content w3-padding-large w3-margin-top" id="portfolio">
+<div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="contact">
+<pre>
+<code>
+<h4 class="w3-left" style="color:red"><u>DOCUMENTATION API</u></h4></br>
+
+
+<span style="color:red">/**Lecture: Slides
+*Bibliography: Chapter 4 from the BOOK
+*Lecture demo:
+*/</span>
+module IMP-SYNTAX
+  syntax AExp ::= Int // builtin
+                | Id  // builtin
+                | String // builtin
+                | "read" "(" ")"
+                | Id "(" Params ")" [strict(2)]
+                | "++" Id
+                > left:
+                  AExp "*" AExp [left]
+                | AExp "/" AExp [left]
+                > left:
+                  AExp "+" AExp [left, strict]
+                | AExp "-" AExp [left]
+                | "(" AExp ")"  [bracket]
+
+  syntax BExp ::= Bool // builtin
+                | "!" BExp
+                | BExp "&&" BExp [non-assoc]
+                | AExp "<=" AExp [strict]
+                | AExp "<"  AExp
+                | "(" BExp ")" [bracket]
+
+  syntax Block ::= "{" Stmt "}"
+                 | "{" "}"
+
+  syntax Stmt ::= Block
+                | "int" Id ";"
+                | "print" "(" AExp ")" ";" [strict]
+                | Id "=" AExp ";"  [strict(2)]
+                | "if" BExp Block "else" Block [strict(1)]
+                | "while" BExp Block
+                | "return" ";"
+                | "return" AExp ";"  [strict]
+                > Stmt Stmt [right]
+
+  syntax Pgm ::= List{Decl, ";"}
+  syntax Decl ::= FunDecl | VarDecl
+  syntax VarDecl ::= "int" Id
+  syntax FunDecl ::= "function" Id "(" VarDecls ")" Block
+  syntax VarDecls ::= List{VarDecl, ","}
+  syntax Params ::= List{AExp, ","}  [strict]
+endmodule
+
+module IMP
+  imports IMP-SYNTAX
+
+  syntax Val ::= Bool | Int | String
+  syntax Vals ::= List{Val, ","}
+  syntax KResult ::= Val | Vals 
+  syntax AExp ::= Val
+  syntax Params ::= Vals 
+
+  syntax KItem ::= "execute"
+  configuration &ltk&gt; $PGM:Pgm ~> execute &lt/k&gt;
+                &ltenv&gt; .Map &lt/env&gt;
+                &ltstore&gt; .Map &lt/store&gt;
+                &ltstack&gt; .List &lt/stack&gt;
+                &ltfstack&gt; .List &lt/fstack&gt;
+                &lt in stream="stdin"&gt; .List &lt/in&gt;
+                &lt out stream="stdout"&gt; .List &lt/out&gt;
+
+				
+<h4 class="w3-left" style="color:red"><u>DOCUMENTATION API</u></h4></br>
+
+
+<span style="color:red">/**
+* Some comentary to see it work
+* The documentation shoud be shown
+*/</span>
+  // trigger main 
+  syntax Id ::= "main" [token]
+  rule .Pgm ~> execute => main(.Params)
+
+  rule I1:Int <= I2:Int => I1 <=Int I2
+  rule I1:Int + I2:Int => I1 +Int I2
+
+  rule S1:Stmt S2:Stmt => S1 ~> S2
+  rule D:Decl ; Ds:Pgm => D ~> Ds 
+
+  // local declarations
+  rule &ltk&gt; int X:Id ; => . ...&lt/k&gt;
+       &ltenv&gt; M:Map => M[X <- !L:Int] &lt/env&gt;
+       &ltstore&gt; M':Map (.Map => !L |-> 0) &lt/store&gt;
+
+  // global declarations
+  rule &ltk&gt; (int X:Id => .) ...&lt/k&gt;
+       &ltenv&gt; Env:Map => Env[X <- !L:Int] &lt/env&gt;
+       &ltstore&gt; Mem:Map => Mem[!L <- 0] &lt/store&gt;
+
+  // function declaration
+  syntax Lambda ::= "lambda" "(" VarDecls "," Block ")"
+  rule &ltk&gt; (function F:Id (VD:VarDecls) B => .) ...&lt/k&gt;
+       &ltenv&gt; Env:Map => Env[F <- !L:Int] &lt/env&gt;
+       &ltstore&gt; Mem:Map => Mem[!L <- lambda(VD, B)] &lt/store&gt;
+
+   rule &ltk&gt; (X:Id = V:Int ; => .)  ...&lt/k&gt;
+        &ltenv&gt;... X |-> L:Int  ...&lt/env&gt;
+        &ltstore&gt;... L |-> (_ => V) ...&lt/store&gt;
+
+   rule &ltk&gt; (X:Id => V) ...&lt/k&gt;
+        &ltenv&gt;... X |-> L:Int ...&lt/env&gt;
+        &ltstore&gt;... L |-> V:Int ...&lt/store&gt;
+
+  rule if true  B1:Block else B2:Block => B1 
+  rule if false B1:Block else B2:Block => B2 
+
+  // syntax KItem ::= "restoreEnv"
+  // rule &ltk&gt; { S:Stmt } => S ~> restoreEnv ...&lt/k&gt;
+  //      &ltenv&gt; Env &lt/env&gt;
+  //      &ltstack&gt; (.List => ListItem(Env)) ...&lt/stack&gt;
+
+  // rule &ltk&gt; (restoreEnv => .) ...&lt/k&gt;
+  //      &ltenv&gt; _ => Env:Map &lt/env&gt;
+  //      &ltstack&gt; (ListItem(Env) => .List) ...&lt/stack&gt;
+
+  rule { S } => S 
+  rule { } => .
+
+  rule while B:BExp { S:Stmt } =>
+       if B { S while B { S } } else { }
+
+  // increment
+  rule &ltk&gt; ( ++ X:Id => V +Int 1) ...&lt/k&gt;
+       &ltenv&gt;... X |-> L ...&lt/env&gt;
+       &ltstore&gt;... (L:Int |-> (V:Int=> V +Int 1)) ...&lt/store&gt;
+
+  // read
+  rule &ltk&gt; (read() => V) ...&lt/k&gt;
+       &lt in &gt; (ListItem(V:Int) => .List) ...&lt/in&gt;
+
+  // print
+  syntax Printable ::= Int | String 
+  syntax AExp ::= Printable
+  rule &ltk&gt; (print(V:Printable); => .) ...&lt/k&gt;
+       &ltout&gt;... (.List => ListItem(V)) &lt/out&gt;
+
+  // function call utils
+  syntax KItem ::= "saveEnv"
+  syntax KItem ::= "mkDecl" "(" VarDecls "," Params ")" 
+
+  // function call
+  rule &ltk&gt; F:Id ( PA:Params ) => saveEnv ~> mkDecl(PF, PA) ~> B ...&lt/k&gt;
+       &ltenv&gt;... F |-> L:Int ...&lt/env&gt;
+       &ltstore&gt;... L |-> lambda(PF:VarDecls, B:Block) ...&lt/store&gt;
+
+  rule &ltk&gt; saveEnv => . ...&lt/k&gt;
+       &ltenv&gt; Env:Map &lt/env&gt;
+       &ltfstack&gt; (.List => ListItem(Env)) ...&lt/fstack&gt;
+
+  rule mkDecl(.VarDecls, .Params) => .
+  rule &ltk&gt; mkDecl( (int X:Id, Ds) , (V, Ps) ) => mkDecl(Ds, Ps) ...&lt/k&gt;
+       &ltenv&gt; Env:Map => Env[X <- !L:Int] &lt/env&gt;
+       &ltstore&gt; Mem:Map => Mem[!L <- V] &lt/store&gt;
+
+  rule &ltk&gt; return V:Int ; => V ...&lt/k&gt;
+       &ltenv&gt; _ => Env &lt/env&gt;
+       &ltfstack&gt; (ListItem(Env) => .List) ...&lt/fstack&gt;
+
+endmodule
+<h4 class="w3-left" style="color:red"><u>DOCUMENTATION API</u></h4></br>
+
+<span style="color:red">//@ Program pgm.imp with global variables and recursive functions:</span>
+
+int a ;
+int b ;
+
+function sum(int n) {
+  if (n <= 0) {
+    return 0;
+  } else {
+    return n + sum(n + (-1));
+  }
+};
+
+function main() {
+  b = 10;
+  a = sum(b);
+  print(a);
+  print("\n");
+}
+<h4 class="w3-left" style="color:red"><u>DOCUMENTATION API</u></h4></br>
+
+<span style="color:red">//@ Result:</span>
+
+-$ krun pgm.imp 
+55
+&ltgeneratedTop&gt; &ltk&gt; . &lt/k&gt; &ltenv&gt; b |-> 2 a |-> 1
+sum |-> 3 main |-> 4 &lt/env&gt; &ltstore&gt; 1 |-> 55
+2 |-> 10 3 |-> lambda ( ( int n ) , .VarDecls ,
+{ if ( n <= 0 ) { return 0 ; } else { return n + sum ( ( n + -1 ) , .VarDecls ) ; } } )
+4 |-> lambda ( .VarDecls , { b = 10 ; a = sum ( b , .VarDecls ) ; print ( a ) ; print ( "\n" ) ; } )
+5 |-> 10 6 |-> 9 7 |-> 8 8 |-> 7 9 |-> 6 10 |-> 5 11 |-> 4 12 |-> 3 13 |-> 2 14 |-> 1 15 |-> 0
+&lt/store&gt; &ltstack&gt; .List &lt/stack&gt; &ltfstack&gt; ListItem ( b |-> 2 a |-> 1 sum |-> 3 main |-> 4 ) &lt/fstack&gt; &lt in &gt;
+ListItem ( #buffer ( "" ) ) ListItem ( "on" ) ListItem ( #istream ( 0 ) ) &lt/in&gt; &ltout&gt; ListItem
+( #ostream ( 1 ) ) ListItem ( "on" ) ListItem ( #buffer ( "" ) ) &lt/out&gt; &lt/generatedTop&gt;
+</code>
+</pre></div>
+</div>
+</body>
+</html>
